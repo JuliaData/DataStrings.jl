@@ -1,0 +1,6 @@
+Manifest.toml
+Manifest-v*.toml
+*.cov
+*.mem
+docs/build/
+.DS_Store

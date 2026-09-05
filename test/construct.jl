@@ -41,6 +41,9 @@
     @test length(col) == 1
     @test_throws ArgumentError push!(StringVector(["x"]),missing)
     plain = StringVector(["a","b"])
+    widened = convert(Vector{Union{String,Missing}},plain)
+    @test widened isa Vector{Union{String,Missing}}
+    @test widened == ["a","b"]
     resize!(plain,4)
     @test AS.materialize(plain) == ["a","b","",""]
     nullable = StringVector(Union{Missing,String}["a"])

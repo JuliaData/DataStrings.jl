@@ -128,4 +128,4 @@ end
 
 Base.copy(v::StringVector{ELT}) where {ELT} = StringVector{ELT}(copy(v.payloads),v.buffers)
 Base.convert(::Type{Vector{String}}, v::StringVector{DataString}) = materialize(v)
-Base.convert(::Type{Vector{Union{String,Missing}}}, v::StringVector) = materialize(v)
+Base.convert(::Type{Vector{Union{String,Missing}}}, v::StringVector) = convert(Vector{Union{String,Missing}}, materialize(v))

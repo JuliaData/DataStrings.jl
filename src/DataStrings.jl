@@ -824,6 +824,21 @@ Base.@propagate_inbounds @inline function Base.getindex(
 end
 
 """
+    materialize(v::AbstractVector{<:Union{Missing,DataString}}) -> Vector{String} or Vector{Union{String,Missing}}
+    materialize(v::AbstractVector{<:Union{Missing,DataBytes}}) -> Vector{Vector{UInt8}} or Vector{Union{Vector{UInt8},Missing}}
+
+Copy every element of a plain vector of values (a column a data source handed out, for
+example) out to an owned `String` or `Vector{UInt8}`, detaching the result from the buffers
+the values reference; `missing` elements are kept.
+"""
+materialize(v::AbstractVector{DataString}) = String[String(x) for x in v]
+materialize(v::AbstractVector{Union{Missing,DataString}}) =
+    Union{String,Missing}[x === missing ? missing : String(x) for x in v]
+materialize(v::AbstractVector{DataBytes}) = Vector{UInt8}[Vector{UInt8}(x) for x in v]
+materialize(v::AbstractVector{Union{Missing,DataBytes}}) =
+    Union{Vector{UInt8},Missing}[x === missing ? missing : Vector{UInt8}(x) for x in v]
+
+"""
     materialize(v::BytesVector) -> Vector{Vector{UInt8}} or Vector{Union{Vector{UInt8},Missing}}
 
 Copy every element out to a plain `Vector{UInt8}`, detaching the result from

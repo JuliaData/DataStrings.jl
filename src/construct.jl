@@ -38,6 +38,8 @@ function DataBytes(bytes::AbstractVector{UInt8})
 end
 
 DataBytes(bytes::DataBytes) = bytes
+Base.convert(::Type{DataBytes}, bytes::AbstractVector{UInt8}) = DataBytes(bytes)
+Base.convert(::Type{DataBytes}, bytes::DataBytes) = bytes
 
 function _append_value!(v::StringVector, s::AbstractString)
     n = ncodeunits(s)

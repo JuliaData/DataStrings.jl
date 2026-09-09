@@ -18,7 +18,7 @@
 name = "DataStrings"
 uuid = "48204bd6-5611-42ea-b167-fc1d713f9be2"
 authors = ["quinnj <quinn.jacobd@gmail.com>"]
-version = "1.0.0"
+version = "1.1.0"
 
 [compat]
 julia = "1.10"

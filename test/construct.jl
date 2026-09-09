@@ -73,3 +73,31 @@
     @test isequal(AS.materialize(v),oracle)
     @test isempty(Test.detect_ambiguities(DataStrings, Base; recursive=true))
 end
+
+@testset "convert and materialize plain vectors" begin
+    b = UInt8[1, 2, 3]
+    long = collect(UInt8, 1:40)
+    db = convert(DataBytes, b)
+    @test db isa DataBytes && db == b
+    @test convert(DataBytes, db) === db
+    @test convert(Vector{DataBytes}, [b, long]) == [b, long]
+    @test isequal(convert(Vector{Union{Missing,DataBytes}}, [b, missing]), [b, missing])
+    strs = [DataString("a"), DataString("x"^20)]
+    @test AS.materialize(strs) isa Vector{String}
+    @test AS.materialize(strs) == ["a", "x"^20]
+    withmissing = AS.materialize([DataString("a"), missing])
+    @test withmissing isa Vector{Union{String,Missing}} && isequal(withmissing, ["a", missing])
+    @test AS.materialize([DataBytes(b), DataBytes(long)]) isa Vector{Vector{UInt8}}
+    @test AS.materialize([DataBytes(b), DataBytes(long)]) == [b, long]
+    bytesmissing = AS.materialize([DataBytes(long), missing])
+    @test bytesmissing isa Vector{Union{Vector{UInt8},Missing}} && isequal(bytesmissing, [long, missing])
+    # the copies are detached from the buffer the views referenced
+    text = "hello world, this is a long value"
+    buf = Vector{UInt8}(codeunits(text))
+    n = length(buf)
+    copied_s = AS.materialize([DataString(AS.view_payload(buf, 1, n, 0, 0), buf)])[1]
+    copied_b = AS.materialize([DataBytes(AS.view_payload(buf, 1, n, 0, 0), buf)])[1]
+    fill!(buf, 0x00)
+    @test copied_s == text
+    @test copied_b == codeunits(text)
+end

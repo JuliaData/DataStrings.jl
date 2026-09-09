@@ -51,7 +51,10 @@ Only `DataString` is exported. Use `DataStrings.` for the other public names.
   `payloadlength`, `payloadbufidx`, `payloadoffset`, `payloadpos`, `INLINE_MAX`,
   and `PAYLOAD_MISSING`: supported builder interface.
 - `materialize(column)`: copy the current values into ordinary Julia strings or
-  byte vectors. Nullable columns preserve missing values.
+  byte vectors. Nullable columns preserve missing values. It also accepts a plain
+  `Vector` of `DataString`/`DataBytes` values (with or without `missing`), such as a
+  column a data source handed out, and detaches the copies from the buffers the
+  values reference.
 
 ## Buffer interface
 

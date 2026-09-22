@@ -42,6 +42,8 @@ Base.convert(::Type{DataBytes}, bytes::AbstractVector{UInt8}) = DataBytes(bytes)
 Base.convert(::Type{DataBytes}, bytes::DataBytes) = bytes
 
 function _append_value!(v::StringVector, s::AbstractString)
+    # Payloads store UTF-8 bytes; other string encodings need conversion.
+    s = s isa Union{String,SubString{String},DataString,SubString{DataString}} ? s : String(s)
     n = ncodeunits(s)
     n <= INLINE_MAX && return inline_payload(codeunits(s), 1, n)
     arena = v.buffers[end]
@@ -75,7 +77,8 @@ end
     DataStrings.StringVector{ELT}(values::AbstractVector)
 
 Build a mutable string column. `ELT` is `DataString` or
-`Union{Missing,DataString}`. New long strings are copied into an append-only
+`Union{Missing,DataString}`. String inputs are normalized to UTF-8.
+New long strings are copied into an append-only
 arena. Previously returned values stay valid after edits, removal, or resizing.
 Deleted bytes are retained until all owners are collected; `materialize` copies
 live values out. Concurrent mutation requires external synchronization.

@@ -1,3 +1,54 @@
+struct EncodedString{T} <: AbstractString
+    data::Vector{T}
+end
+Base.ncodeunits(s::EncodedString) = length(s.data)
+Base.codeunit(::EncodedString{T}) where {T} = T
+Base.codeunit(s::EncodedString, i::Integer) = s.data[i]
+Base.String(s::EncodedString) = transcode(String, s.data)
+# One-byte code units can encode Latin-1 rather than UTF-8.
+Base.String(s::EncodedString{UInt8}) = join(Char.(s.data))
+
+@testset "column edits normalize string encodings" begin
+    for T in (UInt16, UInt32), expected in ("", "ascii", "héλ", "é"^16, "λ🙂"^8)
+        source = EncodedString(transcode(T, expected))
+        @test DataString(source) == expected
+        col = StringVector([source])
+        @test String(col[1]) == expected
+        col[1] = source
+        @test String(col[1]) == expected
+        push!(col, source)
+        pushfirst!(col, source)
+        insert!(col, 2, source)
+        @test AS.materialize(col) == fill(expected, 4)
+        held = col[1]
+        col[1] = "replacement"
+        @test held == expected
+    end
+end
+
+@testset "one-byte non-UTF-8 strings" begin
+    for text in ("hé", "é"^16)
+        source = EncodedString(UInt8[UInt8(c) for c in text])
+        @test DataString(source) == text
+        col = StringVector([source])
+        @test String(col[1]) == text
+    end
+end
+
+allocated_edit(v, value) = @allocated v[1] = value
+@testset "known UTF-8 edit allocations" begin
+    for text in ("abc", "αβγδ"^8)
+        str = DataString(text)
+        for value in (text, SubString(text), str, SubString(str))
+            col = StringVector([""])
+            sizehint!(col.buffers[end], 10_000)
+            allocated_edit(col, value)
+            @test allocated_edit(col, value) == 0
+            @test col[1] == text
+        end
+    end
+end
+
 @testset "constructors and mutable columns" begin
     for str in ("", "hello", "αβγ", "abcdefghijklm", "longer strings stay alive", String(UInt8[0xff,0x80,0x00]))
         s = DataString(str)

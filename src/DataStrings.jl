@@ -19,8 +19,8 @@
     DataStrings
 
 An inline-else-view string representation for Arrow.jl and compatible parsers:
-`DataString`, a string value whose 16-byte payload IS an Arrow StringView
-entry, and `StringVector`, a column of them over a set of byte buffers that IS
+`DataString`, a string value whose 16-byte payload is an Arrow StringView
+entry, and `StringVector`, a column of them over a set of byte buffers that is
 an Arrow Utf8View array's memory. A column parsed into this representation can
 be written as an Arrow column without repacking its payloads or data buffers.
 
@@ -30,25 +30,25 @@ endianness-independent):
 
     a  bits 0..31   content length as Int32 (-1 marks a missing value)
        bits 32..63  content bytes 1..4 — the full bytes when the string is
-                    inline (length ≤ 12), the 4-byte PREFIX when it is a view
-                    (one word compare — length + prefix — rejects most
+                    inline (length ≤ 12), the 4-byte prefix when it is a view
+                    (one word compare of length and prefix rejects most
                     unequal views)
     b  length ≤ 12  content bytes 5..12, zero-padded
-       length > 12  bits 0..31 an Int32 BUFFER INDEX and bits 32..63 an Int32
-                    0-based byte OFFSET of the content within that buffer
+       length > 12  bits 0..31 an Int32 buffer index and bits 32..63 an Int32
+                    0-based byte offset of the content within that buffer
 
-That is byte for byte the Arrow StringView layout (12-byte inline, 4-byte
-prefix, int32 buffer index + int32 offset). Arrow's Int32 words are why a
-buffer must stay under 2 GiB. Byte access, comparison, hashing, and iteration
-never allocate; `String(s)` copies out; `materialize(v)` copies a whole
-column out to `Vector{String}`. Everything here depends only on Base and uses
-concrete types throughout.
+On little-endian hosts that is byte for byte the Arrow StringView layout
+(12-byte inline, 4-byte prefix, int32 buffer index + int32 offset). Arrow's
+Int32 words are why a buffer must stay under 2 GiB. Byte access, comparison,
+hashing, and iteration never allocate; `String(s)` copies out;
+`materialize(v)` copies a whole column out to `Vector{String}`. Everything
+here depends only on Base and uses concrete types throughout.
 
 The same payload is Arrow's BinaryView entry, so the package also carries the
 bytes counterparts: `DataBytes`, an opaque binary value over one payload, and
-`BytesVector`, a column of them that IS a BinaryView array's memory.
+`BytesVector`, a column of them that is a BinaryView array's memory.
 
-Lifetime: an `DataString` view pins its buffer (`data`), and a
+Lifetime: a `DataString` view pins its buffer (`data`), and a
 `StringVector` pins all of its buffers, exactly like any zero-copy
 string view; a consumer that must outlive the source materializes.
 """
@@ -567,8 +567,8 @@ end
 A string column: one payload per element and the byte buffers that view
 payloads point into (`buffers[bufidx + 1]` for an entry's buffer index).
 `ELT` is `DataString` for a column with no missing values, or
-`Union{Missing, DataString}`. `getindex` returns an `DataString` (or
-`missing`) with NO allocation; `materialize` copies out to `Vector{String}`.
+`Union{Missing, DataString}`. `getindex` returns a `DataString` (or
+`missing`) without allocating; `materialize` copies out to `Vector{String}`.
 
 Construction validates every payload, including missing markers, inline
 padding, buffer indices, byte ranges, and long-string prefixes. This makes
@@ -762,8 +762,8 @@ Base.convert(::Type{Vector{UInt8}}, b::DataBytes) = Vector{UInt8}(b)
 A binary column: one payload per element and the byte buffers that view
 payloads point into — the bytes counterpart of [`StringVector`](@ref), and an
 Arrow BinaryView array's memory. `ELT` is `DataBytes` or
-`Union{Missing, DataBytes}`. `getindex` returns an `DataBytes` (or
-`missing`) with NO allocation; `materialize` copies out to
+`Union{Missing, DataBytes}`. `getindex` returns a `DataBytes` (or
+`missing`) without allocating; `materialize` copies out to
 `Vector{Vector{UInt8}}`.
 
 Construction validates every payload exactly as [`StringVector`](@ref) does,

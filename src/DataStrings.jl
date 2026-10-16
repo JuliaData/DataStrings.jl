@@ -522,11 +522,14 @@ Base.Symbol(s::DataString) = Symbol(String(s))
 Base.promote_rule(::Type{DataString}, ::Type{String}) = String
 
 function Base.write(io::IO, s::DataString)
-    n = 0
-    @inbounds for i = 1:ncodeunits(s)
-        n += write(io, codeunit(s, i))
+    n = ncodeunits(s)
+    # a view's content is one contiguous run of its retained buffer
+    n > INLINE_MAX && return GC.@preserve s unsafe_write(io, pointer(s.data, payloadpos(s.p)), n)
+    m = 0
+    @inbounds for i = 1:n
+        m += write(io, codeunit(s, i))
     end
-    return n
+    return m
 end
 Base.print(io::IO, s::DataString) = (write(io, s); nothing)
 

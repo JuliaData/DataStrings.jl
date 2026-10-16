@@ -71,6 +71,12 @@ end
         @test read(io,String) == "αβ"
     end
     @test DataString["a","b"] == ["a","b"]
+    longs = StringVector(["first long string value", "second long string value"])
+    for s in (DataString(""), DataString("αβ"), DataString("twelve bytes"), longs[1], longs[2])
+        io = IOBuffer()
+        @test write(io, s) == ncodeunits(s)
+        @test String(take!(io)) == String(s)
+    end
     values = Union{String,Missing}["a", "a long value retained by a view", missing]
     col = StringVector(values)
     retained = col[2]

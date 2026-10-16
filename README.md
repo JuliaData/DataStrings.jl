@@ -29,7 +29,7 @@ bytes = DataStrings.DataBytes(UInt8[0x00, 0xff])
 @assert collect(bytes) == [0x00, 0xff]
 ```
 
-After registration, install with `import Pkg; Pkg.add("DataStrings")`.
+Install with `import Pkg; Pkg.add("DataStrings")`.
 
 ## Public API
 
@@ -97,10 +97,11 @@ arbitrary bytes. DataString itself follows String's tolerant byte semantics.
 
 ## Validation and provenance
 
-CI tests Julia 1.10, 1.11, current stable, and nightly across Linux, Windows, and
-macOS. A separate job compiles and executes a representative workload with
-JuliaC `--trim=safe`. Tests cover malformed UTF-8, payload geometry, seeded hash
-agreement, zero-allocation read kernels, mutable columns, and retained lifetimes.
+CI tests Julia 1.10 and current stable on Linux, Windows, and macOS, and Julia
+1.11 and the latest prerelease on Linux. A separate job compiles and executes a
+representative workload with JuliaC `--trim=safe`. Tests cover malformed UTF-8,
+payload geometry, seeded hash agreement, zero-allocation read kernels, mutable
+columns, and retained lifetimes.
 
 Run `julia --project -e 'using Pkg; Pkg.test()'`. For trim tests:
 

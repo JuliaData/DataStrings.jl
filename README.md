@@ -78,6 +78,8 @@ range, and prefix. StringVector copies the buffer-reference list and adds a
 private append-only arena; it retains the supplied payload vector and byte
 buffers. BytesVector retains the supplied vectors. Scalar values retain their
 byte vector, so collecting a column does not invalidate previously read values.
+The Serialization stdlib (and so Distributed) writes a scalar value as a copy
+that holds only its own bytes; columns serialize with their buffers.
 
 Column methods append bytes rather than overwriting existing content. Retained
 values stay valid across supported edits. Deleted content remains allocated while

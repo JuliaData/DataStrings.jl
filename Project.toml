@@ -20,5 +20,12 @@ uuid = "48204bd6-5611-42ea-b167-fc1d713f9be2"
 authors = ["quinnj <quinn.jacobd@gmail.com>"]
 version = "1.1.0"
 
+[weakdeps]
+Serialization = "9e88b42a-f829-5b0c-bbe9-9e923198166b"
+
+[extensions]
+DataStringsSerializationExt = "Serialization"
+
 [compat]
+Serialization = "1"
 julia = "1.10"
